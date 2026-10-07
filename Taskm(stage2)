@@ -1,0 +1,190 @@
+# The improvised version of Task_m , also includes the state of Transition to further changes
+#how to utilize
+-> comments for initial Task_m better  for understanding, better interface 
+                                                          -> adding try and except
+                                                          -> better handling then initial design
+-> also inlcudes transition to final design
+                                        -> sys + argparse addition(needs correction)
+                                        -> defining main and functions 
+
+import sys
+import json
+from datetime import datetime
+import argparse
+def load_tasks():
+# creation of database file , which was manually created before
+        try:
+            with open("data.txt", "r") as file:
+                 return json.load(file)
+        except FileNotFoundError: #if the file is missing, create an empty Python list.
+#Save that empty list as valid JSON: [].
+#Later, load [] back into Python
+            data = []
+            with open("data.txt", "w") as file:
+                json.dump(data, file, indent = 4)
+        except json.JSONDecodeError:
+            print("data.txt does not contain valid json")
+            sys.exit()
+#If the file exists, its tasks are loaded.
+#If it does not exist, an empty list [] is created and saved.
+#If it is empty or invalid, the program reports the problem instead of crashing.
+if len(sys.argv) < 2:
+        print("Please provide a valid command type welcome for help")
+action = sys.argv[1].strip().lower()
+if action == "welcome":
+        print("""Weclome, command words for input
+-- for adding task -> "add" ,"task detail"
+-- for checking tasks -> "list"  as action - > payload accepted ->  "done" and -> "not done"
+-- for  printing all tasks -> use only "list"
+-- To delete a task - >"delete" "task ID as payload" """)
+payload = " ".join(sys.argv[2:]).strip().lower() #string
+print(f"action is -> {action}")
+print(f"payload is -> {payload}")
+    #for loading file
+data = load_tasks() #helps in storing previous content to save from overwriting
+    #for saving file
+def save_tasks(data):  #need to know which data to write, require data to save
+        with open("data.txt", "w") as file:
+         #kya add karna , kisme , indent
+            json.dump(data, file, indent = 4)   
+            #overwrite cleaned file
+        #put the new task plus prevoius stayed in "data"
+        #why not append or a?  json list cannot be safely extended by it 
+
+#Open file once by function
+ #      ↓
+#Load file contents into data inside the  load func
+ #      ↓
+#Perform an operation on data in memory in another func 
+ #      ↓
+#Save the changed data back to the file 
+#now we can call data in any func by calling this function
+def add_task(data,payload):
+        if data:
+            max_id = max(item["id"] for item in data) #"" are compulsory since it is an string key
+            #data is a list of dicts, all those inside dict are stored in variable item then their id is used
+            new_id = max_id + 1
+        else: new_id = 1
+        new_task = {
+        "id": new_id,
+        "task":payload,
+        "status":"not done",
+        "created at": datetime.now().isoformat 
+    }
+        data.append(new_task)
+        return new_task
+        
+
+'''data is the list.
+    Each element inside data is an existing dictionary.
+    item is a temporary loop variable(iterator) pointing to ->one dictionary at a time.
+    item["id"] reads the "id" value from that dictionary.
+    No dictionary is created by the expression.'''
+def delete_tasks(data,payload):
+        try:
+            task_id = int(payload) #payload is string we compare with int so need int
+        except ValueError:
+            print("task must be Whole number!")
+        return
+        for i , item in enumerate(data): #item with i for i as index item to denote each dict
+            if item['id'] == task_id: #in that item find id matching
+                return data.pop(i) #pop dict at index i return ends function here
+               # break break here says desired result found and loop breaking in between
+            return NoNe              #else: desired result id matching not happen and loop ended "sucessfully"
+                                      #print("Task not found!") #then print, if used with if indentation will print every iteration
+#when a task is deleted its index no or id will be lost and add task will focus on max so
+#for a deleted task 2 , if 3 exist new task will have 4 and sequence will be now -> 1,3,4
+def list_tasks(data,status=None):
+        if status == "None":
+            return data
+        else:
+            return  [
+                task
+                for task in data
+                if task.get("status") == status
+            ]
+def build_parser():
+        parser = argparse.ArgumentParser(
+            description = "A command Line Task manager"
+        )
+        subparsers = parser.add_subparsers(
+            dest = "command",
+            required = True
+        )
+        subparsers.add_parser(
+            "welcome",
+            help = "show available commands"
+        )
+        add_parser = subparsers.add_parser(
+                "add",
+                help = "Add a new task"
+        )
+        add_parser.add_argument(
+            "task",
+            nargs = "+"
+            help = "the task description"
+        )
+        list_parser = subparsers.add_parser(
+            "list",
+            help = "list tasks"
+        )
+        list_parser.add_argument(
+            "--status",
+            choices = ["done", "not_done"]
+            help = "filter task by status"
+        )
+        delete_parser = subparsers.add_parser(
+            "delete",
+            help = "delete a task by id"
+        )
+        delete_parser.add_argument(
+            "task_id",
+            type = int,
+            help = "The numeric id of the task"
+        )
+        return parser
+def main():
+        parser  = build_parser
+        args = parser.parse_args()
+        if args.command == "welcome":
+            parser.print_help() #why not print(help)
+            return
+        try:
+            data = load_tasks()
+        except ValueError # as error: why this
+            print("error")
+            return
+        if args.command == "add":
+            task_test = " ".join(args.task)
+            new_task = add_task(data, task_test)
+            save_tasks(data)
+            print(f"Task added with id {new_task['id']}")
+        elif args.command == "list":
+            tasks = list_tasks(data, args.status)
+            if tasks:
+                for task in tasks:
+                    print("task")
+                else:
+                    print("nothing to show")
+        elif args.command == "delete":
+            deleted_task = delete_tasks(data, args.task_id)
+            if deleted_task is None:
+                print("Task not found")
+            else:
+                save_tasks(data)
+                print("task deleted successfully")
+
+    
+'''
+    commands = { #dict
+        "add": handle_add,
+        "list": handle_list,
+        "delete":handle_delete
+    }      
+    handler = commands.get(action)  #get calls the value of that key, action variable will have key 
+    if handler is None:
+        print("unknown command") 
+    else:
+        handler(data,payload)  #mapping data to behavior'''
+if __name__ == "__main__":
+#read git chat again
