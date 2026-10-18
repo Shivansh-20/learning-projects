@@ -1,3 +1,11 @@
+''' *what we learnt new in this version--
+-> we shifted from using sys to arparse which is specifically designed to parse arguments
+-> we imporved the overall flow of program plus created organized functions 
+->we are calling main now and all function called inside main , learned better handlind of OOP programaing
+->we learned about creating subparsers, help plus using parser class
+*what's left--
+we will implement dictionary (commands) at bottom of the code with main for better function calling instead of IF-else(final work) before testing
+'''
 import json
 from datetime import datetime
 import argparse
@@ -23,7 +31,6 @@ def load_tasks():
 -- for checking tasks -> "list"  as action - > payload accepted ->  "done" and -> "not done"
 -- for  printing all tasks -> use only "list"
 -- To delete a task - >"delete" "task ID as payload" """)'''
-#for loading file
 
 #for saving file
 def save_tasks(data):  #need to know which data to write, require data to save
@@ -158,7 +165,7 @@ def main():
                 print("task deleted successfully")
 
     
-'''
+''' The dictionary
     commands = { #dict
         "add": handle_add,
         "list": handle_list,
