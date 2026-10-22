@@ -4,3 +4,8 @@ I am actively chasing structural learning and understanding Developer mindset to
 
 
 It helps me to reason my path for the particular approach and satisfy my curiosity for the same 
+
+current content -
+  => CLI task manager and its improving version for Learning
+  => stock trading simulator API with FastAPI and SQLite to learn REST and SQL 
+    => next Task - improve the first version of simulator and work on it trade offs
